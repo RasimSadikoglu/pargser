@@ -6,7 +6,6 @@
 
 int main() {
 
-    int argc = 10;
     const char *argv[] = {
         "--bool",
         "--int",
@@ -19,6 +18,7 @@ int main() {
         "13",
         "21"
     };
+    int argc = sizeof(argv) / sizeof(*argv);
 
     int b = 0;
     int i = 0;
@@ -28,7 +28,9 @@ int main() {
     int x = 0;
     int y = 0;
 
-    pargser(argc, argv, "--bool%b;--int%i;--str%s;--double%d;--coordinate%i%i", &b, &i, &s, &d, &x, &y);
+    int b2 = 1;
+
+    pargser(argc, argv, "--bool%b;--int%i;--str%s;--double%d;--coordinate%i%i;--notfound%b;", &b, &i, &s, &d, &x, &y, &b2);
 
     assert(b == 1);
     assert(i == 17);
@@ -36,4 +38,5 @@ int main() {
     assert(d == 19.18);
     assert(x == 13);
     assert(y == 21);
+    assert(b2 == 0);
 }

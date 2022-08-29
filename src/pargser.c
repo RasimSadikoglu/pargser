@@ -42,11 +42,11 @@ static void pargser_parse(int argc, const char *argv[], int index, void *ref, co
         return;
     }
 
-#if EXIT_AT_ERROR
-    if (index + 1 >= argc && index == NOT_FOUND) exit(EXIT_FAILURE);
-#endif
-
     int out_of_bound = index == NOT_FOUND || index + 1 >= argc;
+
+#if EXIT_AT_ERROR
+    if (out_of_bound) exit(EXIT_FAILURE);
+#endif
 
     if (arg_type == 'i') {
         *((int*)ref) = !out_of_bound ? atoi(argv[index + 1]) : 0;
