@@ -1,68 +1,93 @@
 #include "pargser.h"
 
+#include <stdarg.h>
+#include <stdint.h>
+#include <stdlib.h>
+#include <string.h>
+
 #include <stdio.h>
 
-int find_argument_address(int argc, char *argv[], const char *arg, size_t size) {
+enum INDEX_OPTIONS {
+    FIND_NEXT = -2,
+    NOT_FOUND = -1
+};
 
-    for (int i = 0; i < argc; i++) {
-        if (!strncmp(argv[i], arg, size)) return i;
+#ifndef EXIT_AT_ERROR
+#define EXIT_AT_ERROR 0
+#endif
+
+static uintptr_t pargser_tokenize(const char *str) {
+
+    const char *temp = str;
+
+    while (*temp != '\0' && *temp != '%' && *temp != ';') {
+        temp++;
     }
 
-    return -1;
+    return (uintptr_t)(temp - str);
 }
 
-int pargser(int argc, char *argv[], const char *format, ...) {
+static int pargser_find(int argc, const char *argv[], const char *arg_name, uintptr_t size) {
+    for (int i = 0; i < argc; i++) {
+        if (!strncmp(argv[i], arg_name, size)) return i;
+    }
+
+    return NOT_FOUND;
+}
+
+static void pargser_parse(int argc, const char *argv[], int index, void *ref, const char arg_type) {
+
+    if (arg_type == 'b') {
+        *((int*)ref) = index != NOT_FOUND;
+        return;
+    }
+
+#if EXIT_AT_ERROR
+    if (index + 1 >= argc && index == NOT_FOUND) exit(EXIT_FAILURE);
+#endif
+
+    int out_of_bound = index == NOT_FOUND || index + 1 >= argc;
+
+    if (arg_type == 'i') {
+        *((int*)ref) = !out_of_bound ? atoi(argv[index + 1]) : 0;
+    }
+
+    if (arg_type == 's') {
+        *((const char**)ref) = !out_of_bound ? argv[index + 1] : NULL;
+    }
+
+    if (arg_type == 'd') {
+        *((double*)ref) = !out_of_bound ? atof(argv[index + 1]) : 0;
+    }
+}
+
+int pargser(int argc, const char *argv[], const char *format, ...) {
 
     va_list args;
-
     va_start(args, format);
 
-    int percent_symbol = 0, argv_index = -1;
-    const char *start = format;
+    int index = FIND_NEXT;
 
-    int *int_arg;
-    char *char_arg;
-    char **charp_arg;
+    while (*format) {
 
-    for (; *format != '\0'; format++) {
-        if (*format != '%' && !percent_symbol) continue;
+        uintptr_t size = pargser_tokenize(format);
 
-        if (!percent_symbol) {
-            percent_symbol = 1;
-            argv_index = find_argument_address(argc, argv, start, format - start);
+        if (size == 0) return 0;
+
+        if (index == FIND_NEXT) {
+            index = pargser_find(argc, argv, format, size);
+            format += size + 1;
             continue;
         }
 
-        switch (*format) {
-            case '?':
-                int_arg = va_arg(args, int*);
-                *int_arg = argv_index != -1;
-                break;
-            case 'd':
-                int_arg = va_arg(args, int*);
-                if (argv_index == -1) break;
-                if (argv_index + 1 == argc) return -1;
-                *int_arg = atoi(argv[argv_index + 1]);
-                break;
-            case 's':
-                char_arg = va_arg(args, char*);
-                if (argv_index == -1) break;
-                if (argv_index + 1 == argc) return -1;
-                strcpy(char_arg, argv[argv_index + 1]);
-                break;
-            case '*':
-                charp_arg = va_arg(args, char**);
-                if (argv_index == -1) break;
-                if (argv_index + 1 == argc) return -1;
-                *charp_arg = argv[argv_index + 1];
-                break;
-            default:
-                return -1;
-        }
+        void *ref = va_arg(args, void*);
+        const char arg_type = *(format + size - 1);
+        pargser_parse(argc, argv, index, ref, arg_type);
+        index++;
 
-        percent_symbol = 0;
-        argv_index = -1;
-        start = format + 1;
+        if (*(format + size) == ';') index = FIND_NEXT;
+        format += size + 1;
     }
 
+    return 0;
 }
