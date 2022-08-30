@@ -2,12 +2,12 @@
 
 ## Usage
 
-"<argument_name>%<argument_type><...>;"
+"<argument_name>%<argument_type>...;"
 
-"..." is an optional argument that takes unspecified amount of parameter as the last type that is specified until founds another argument that matches with 
+"..." is an optional argument that takes unspecified amount of parameter as the last type that is specified until it founds another argument that matches with 
 any argument name that is given. (Not implemented)
 
-Additionally, there can be multiple parameters for given argument. ex: "--coordinate%f%f;"
+Additionally, there can be multiple parameters for given argument. ex: "--coordinate%d%d;"
 
 ## Argument Types
 
