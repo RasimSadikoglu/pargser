@@ -7,16 +7,16 @@
 int main() {
 
     const char *argv[] = {
-        "--bool",
-        "--int",
-        "17",
-        "--str",
-        "abc",
-        "--double",
-        "19.18",
         "--coordinate",
         "13",
-        "21"
+        "21",
+        "--int",
+        "17",
+        "--bool",
+        "--double",
+        "19.18",
+        "--str",
+        "abc"
     };
     int argc = sizeof(argv) / sizeof(*argv);
 
@@ -32,7 +32,7 @@ int main() {
 
     double notchanged = 13.23;
 
-    pargser(argc, argv, "--bool%b;--int%i;--str%s;--double%d;--coordinate%i%i;--notfound%b;--notchanged%d", &b, &i, &s, &d, &x, &y, &b2, &notchanged);
+    pargser(argc, argv, "--bool%b;--int%i;--str%s;--double%d;--coordinate%i%i;--notfound%b;--notchanged%d;", &b, &i, &s, &d, &x, &y, &b2, &notchanged);
 
     assert(b == 1);
     assert(i == 17);
