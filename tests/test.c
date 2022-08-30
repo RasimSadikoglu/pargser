@@ -39,4 +39,6 @@ int main() {
     assert(x == 13);
     assert(y == 21);
     assert(b2 == 0);
+
+    printf("Success");
 }

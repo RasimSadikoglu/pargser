@@ -13,7 +13,7 @@ enum INDEX_OPTIONS {
 };
 
 #ifndef EXIT_AT_ERROR
-#define EXIT_AT_ERROR 0
+#define EXIT_AT_ERROR 1
 #endif
 
 static uintptr_t pargser_tokenize(const char *str) {
@@ -42,22 +42,26 @@ static void pargser_parse(int argc, const char *argv[], int index, void *ref, co
         return;
     }
 
-    int out_of_bound = index == NOT_FOUND || index + 1 >= argc;
+    if (index == NOT_FOUND) return;
+
+    int out_of_bound = index + 1 >= argc;
 
 #if EXIT_AT_ERROR
     if (out_of_bound) exit(EXIT_FAILURE);
+#else
+    if (out_of_bound) return;
 #endif
 
     if (arg_type == 'i') {
-        *((int*)ref) = !out_of_bound ? atoi(argv[index + 1]) : 0;
+        *((int*)ref) = atoi(argv[index + 1]);
     }
 
     if (arg_type == 's') {
-        *((const char**)ref) = !out_of_bound ? argv[index + 1] : NULL;
+        *((const char**)ref) = argv[index + 1];
     }
 
     if (arg_type == 'd') {
-        *((double*)ref) = !out_of_bound ? atof(argv[index + 1]) : 0;
+        *((double*)ref) = atof(argv[index + 1]);
     }
 }
 
