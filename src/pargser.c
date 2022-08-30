@@ -4,7 +4,6 @@
 #include <stdint.h>
 #include <stdlib.h>
 #include <string.h>
-
 #include <stdio.h>
 
 enum INDEX_OPTIONS {
@@ -44,25 +43,34 @@ static void pargser_parse(int argc, const char *argv[], int index, void *ref, co
 
     if (index == NOT_FOUND) return;
 
-    int out_of_bound = index + 1 >= argc;
-
+    if (index + 1 >= argc) {
 #if EXIT_AT_ERROR
-    if (out_of_bound) exit(EXIT_FAILURE);
+        fprintf(stderr, "Out of bound while parsing '%s'!", argv[index]);
+        exit(EXIT_FAILURE);
 #else
-    if (out_of_bound) return;
+        return;
 #endif
+    }
 
     if (arg_type == 'i') {
         *((int*)ref) = atoi(argv[index + 1]);
+        return;
     }
 
     if (arg_type == 's') {
         *((const char**)ref) = argv[index + 1];
+        return;
     }
 
     if (arg_type == 'd') {
         *((double*)ref) = atof(argv[index + 1]);
+        return;
     }
+
+#if EXIT_AT_ERROR
+    fprintf(stderr, "Invalid argument type is given '%c'!", arg_type);
+    exit(EXIT_FAILURE);
+#endif
 }
 
 int pargser(int argc, const char *argv[], const char *format, ...) {
